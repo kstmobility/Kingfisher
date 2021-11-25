@@ -24,6 +24,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#if canImport(UIKit) && canImport(Combine) && (arch(arm64) || arch(x86_64))
 import Foundation
 import CoreGraphics
 
@@ -693,3 +694,4 @@ extension KFOptionSetter {
         return self
     }
 }
+#endif

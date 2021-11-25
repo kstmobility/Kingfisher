@@ -590,29 +590,33 @@ extension KingfisherWrapper where Base: KFCrossPlatformImage {
         return KingfisherWrapper.image(cgImage: cgImage, scale: targetScale, refImage: ref)
         #else
         
-        let format = UIGraphicsImageRendererFormat.preferred()
-        format.scale = scale ?? self.scale
-        let renderer = UIGraphicsImageRenderer(size: size, format: format)
-        
-        var useRefImage: Bool = false
-        let image = renderer.image { rendererContext in
+        if #available(iOS 11.0, *) {
+            let format = UIGraphicsImageRendererFormat.preferred()
+            format.scale = scale ?? self.scale
+            let renderer = UIGraphicsImageRenderer(size: size, format: format)
             
-            let context = rendererContext.cgContext
-            if inverting { // If drawing a CGImage, we need to make context flipped.
-                context.scaleBy(x: 1.0, y: -1.0)
-                context.translateBy(x: 0, y: -size.height)
+            var useRefImage: Bool = false
+            let image = renderer.image { rendererContext in
+                
+                let context = rendererContext.cgContext
+                if inverting { // If drawing a CGImage, we need to make context flipped.
+                    context.scaleBy(x: 1.0, y: -1.0)
+                    context.translateBy(x: 0, y: -size.height)
+                }
+                
+                useRefImage = draw(context)
             }
-            
-            useRefImage = draw(context)
-        }
-        if useRefImage {
-            guard let cgImage = image.cgImage else {
-                return base
+            if useRefImage {
+                guard let cgImage = image.cgImage else {
+                    return base
+                }
+                let ref = refImage ?? base
+                return KingfisherWrapper.image(cgImage: cgImage, scale: format.scale, refImage: ref)
+            } else {
+                return image
             }
-            let ref = refImage ?? base
-            return KingfisherWrapper.image(cgImage: cgImage, scale: format.scale, refImage: ref)
         } else {
-            return image
+            return base
         }
         #endif
     }
